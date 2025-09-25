@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 function Navbar() {
   return (
     <div>
-      <div className="navbar navbar-expand-lg navbar-light bg-light">
+      <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <div className="container-fluid">
           <div className="navbar-brand" href="#">E-Shop</div>
           <button className='navbar-toggler' type='button' data-bs-toggle="collapse"></button>
@@ -28,7 +28,7 @@ function Navbar() {
           </div>
         </div>
 
-      </div>
+      </nav>
     </div>
   )
 }
