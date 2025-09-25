@@ -22,6 +22,9 @@ function Navbar() {
                 <Link to='/'>SignUp</Link>
               </li>
             </ul>
+            <form action="d-flex">
+              <input type="search" className='form-control me-2' placeholder='search' aria-label='Search' />
+            </form>
           </div>
         </div>
 
