@@ -1,0 +1,55 @@
+class WeeklyClock {
+  private data: any[] = [];
+  private timer: ReturnType<typeof setInterval> | null = null;
+
+  constructor() {
+    this.startClock();
+  }
+
+  private startClock() {
+    this.timer = setInterval(() => {
+      const now = new Date();
+      console.log(`[${now.toLocaleString()}] Clock running...`);
+
+      this.logData({ timestamp: now, value: Math.random() });
+
+      if (this.isResetTime(now)) {
+        this.resetData();
+      }
+    }, 1000);
+  }
+
+  private logData(entry: any) {
+    this.data.push(entry);
+  }
+
+  private isResetTime(date: Date): boolean {
+    return (
+      date.getDay() === 0 && // Sunday
+      date.getHours() === 12 &&
+      date.getMinutes() === 59 &&
+      date.getSeconds() === 59
+    );
+  }
+
+  private resetData() {
+    console.log("🕒 Resetting data at Sunday 12:59:59...");
+    this.data = [];
+  }
+
+  public getData() {
+    return this.data;
+  }
+
+  public stopClock() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      console.log("Clock stopped.");
+    }
+  }
+}
+
+const clock = new WeeklyClock();
+
+// For demo only: stop after 10 seconds
+setTimeout(() => clock.stopClock(), 10_000);
