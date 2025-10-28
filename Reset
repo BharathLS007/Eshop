@@ -1,0 +1,79 @@
+type UserSession = {
+  id: string;
+  name: string;
+  createdAt: Date;
+};
+
+class SessionManager {
+  private sessions: Map<string, UserSession> = new Map();
+  private resetTimer: ReturnType<typeof setTimeout> | null = null;
+  private testMode: boolean;
+
+  constructor(testMode = false) {
+    this.testMode = testMode;
+    this.scheduleReset();
+  }
+
+  /** Add or update a session */
+  addSession(id: string, name: string): void {
+    const session: UserSession = { id, name, createdAt: new Date() };
+    this.sessions.set(id, session);
+    console.log(` Session added for ${name}`);
+  }
+
+  /** Get one session by ID */
+  getSession(id: string): UserSession | undefined {
+    return this.sessions.get(id);
+  }
+
+  /** Get all active sessions */
+  getAllSessions(): UserSession[] {
+    return Array.from(this.sessions.values());
+  }
+
+  /** Clear all stored sessions */
+  clearSessions(): void {
+    this.sessions.clear();
+    console.log(" All sessions have been reset!");
+  }
+
+  /** Schedule reset based on mode (test or real) */
+  private scheduleReset(): void {
+    let msUntilReset: number;
+
+    if (this.testMode) {
+      // TEST MODE: reset in 2 minutes, then every 5 minutes
+      msUntilReset = 2 * 60 * 1000;
+      console.log("Test mode active — first reset in 2 minutes.");
+    } else {
+      // PRODUCTION MODE: every Sunday 12:59:59 PM
+      const now = new Date();
+      const nextSunday = new Date(now);
+      nextSunday.setDate(now.getDate() + ((7 - now.getDay()) % 7));
+      nextSunday.setHours(12, 59, 59, 0);
+      if (nextSunday <= now) nextSunday.setDate(nextSunday.getDate() + 7);
+      msUntilReset = nextSunday.getTime() - now.getTime();
+      console.log(` Next reset scheduled in ${(msUntilReset / 1000 / 60 / 60).toFixed(2)} hours`);
+    }
+
+    this.resetTimer = setTimeout(() => {
+      this.clearSessions();
+      if (this.testMode) {
+        // Schedule next test reset in 5 minutes
+        console.log(" Scheduling next test reset in 5 minutes...");
+        this.resetTimer = setTimeout(() => this.scheduleReset(), 5 * 60 * 1000);
+      } else {
+        // Re-schedule for next week
+        this.scheduleReset();
+      }
+    }, msUntilReset);
+  }
+}
+
+
+const manager = new SessionManager(true); // true = test mode
+
+manager.addSession("1", "Alice");
+manager.addSession("2", "Bob");
+
+console.log("🔹 Current sessions:", manager.getAllSessions());
