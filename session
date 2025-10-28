@@ -1,0 +1,69 @@
+type UserSession = {
+  id: string;
+  name: string;
+  createdAt: Date;
+};
+
+class SessionManager {
+  private sessions: Map<string, UserSession> = new Map();
+  private resetTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    this.scheduleWeeklyReset();
+  }
+
+  /** Add or update a session */
+  addSession(id: string, name: string): void {
+    const session: UserSession = { id, name, createdAt: new Date() };
+    this.sessions.set(id, session);
+    console.log(` Session added for ${name}`);
+  }
+
+  /** Get one session by ID */
+  getSession(id: string): UserSession | undefined {
+    return this.sessions.get(id);
+  }
+
+  /** Get all active sessions */
+  getAllSessions(): UserSession[] {
+    return Array.from(this.sessions.values());
+  }
+
+  /** Clear all stored sessions */
+  clearSessions(): void {
+    this.sessions.clear();
+    console.log(" All sessions have been reset!");
+  }
+
+  /** Schedule reset for next Sunday 12:59:59 PM */
+  private scheduleWeeklyReset(): void {
+    const now = new Date();
+    const nextSunday = new Date(now);
+
+    // Move date to the coming Sunday
+    nextSunday.setDate(now.getDate() + ((7 - now.getDay()) % 7));
+    nextSunday.setHours(12, 59, 59, 0);
+
+    // If the time already passed today, move to next week
+    if (nextSunday <= now) {
+      nextSunday.setDate(nextSunday.getDate() + 7);
+    }
+
+    const msUntilReset = nextSunday.getTime() - now.getTime();
+    console.log(` Next reset in ${(msUntilReset / 1000 / 60 / 60).toFixed(2)} hours`);
+
+    // Set a timer
+    this.resetTimer = setTimeout(() => {
+      this.clearSessions();
+      this.scheduleWeeklyReset(); // Schedule next reset
+    }, msUntilReset);
+  }
+}
+
+// --- Example usage ---
+const manager = new SessionManager();
+
+manager.addSession("1", "Alice");
+manager.addSession("2", "Bob");
+
+console.log(manager.getAllSessions());
