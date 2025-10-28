@@ -1,0 +1,77 @@
+type UserSession = {
+  id: string;
+  name: string;
+  createdAt: Date;
+};
+
+class SessionManager {
+  private sessions: Map<string, UserSession> = new Map();
+  private resetTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    this.scheduleWeeklyReset();
+  }
+
+  /** Add or update a session */
+  addSession(id: string, name: string): void {
+    const session: UserSession = { id, name, createdAt: new Date() };
+    this.sessions.set(id, session);
+    console.log(`✅ Session added for ${name}`);
+  }
+
+  /** Get one session by ID */
+  getSession(id: string): UserSession | undefined {
+    return this.sessions.get(id);
+  }
+
+  /** Get all active sessions */
+  getAllSessions(): UserSession[] {
+    return Array.from(this.sessions.values());
+  }
+
+  /** Clear all stored sessions */
+  clearSessions(): void {
+    this.sessions.clear();
+    console.log("🚮 All sessions have been reset!");
+  }
+
+  /** Schedule reset for exact Sunday 12:59:59 PM each week */
+  private scheduleWeeklyReset(): void {
+    const now = new Date();
+    const nextReset = this.getNextSundayResetTime(now);
+
+    const msUntilReset = nextReset.getTime() - now.getTime();
+    console.log(`⏰ Next reset scheduled for: ${nextReset.toLocaleString()}`);
+
+    this.resetTimer = setTimeout(() => {
+      this.clearSessions();
+      this.scheduleWeeklyReset(); // Schedule again for next Sunday
+    }, msUntilReset);
+  }
+
+  /** Compute next Sunday 12:59:59 PM from given date */
+  private getNextSundayResetTime(from: Date): Date {
+    const nextSunday = new Date(from);
+    const day = from.getDay();
+    const daysUntilSunday = (7 - day) % 7; // days left until Sunday
+
+    // Move to this coming Sunday (or next if already past)
+    nextSunday.setDate(from.getDate() + daysUntilSunday);
+    nextSunday.setHours(12, 59, 59, 0);
+
+    // If current time is already past this Sunday at 12:59:59 PM, move to next week
+    if (nextSunday <= from) {
+      nextSunday.setDate(nextSunday.getDate() + 7);
+    }
+
+    return nextSunday;
+  }
+}
+
+// --- Example usage ---
+const manager = new SessionManager();
+
+manager.addSession("1", "Alice");
+manager.addSession("2", "Bob");
+
+console.log("🔹 Current sessions:", manager.getAllSessions());
